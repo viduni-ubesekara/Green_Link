@@ -6,8 +6,7 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import html2pdf from 'html2pdf.js';
 
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend, ArcElement);
 
@@ -88,7 +87,7 @@ const CropDetails = () => {
 
     return (
         <>
-            <Header />
+        
 
             <Container maxWidth="lg" sx={{ padding: 0 }}>
                 <Paper elevation={3} sx={{ padding: 3, marginTop: 4 }} id="crop-details-no-buttons">
@@ -216,7 +215,6 @@ const CropDetails = () => {
                 </Paper>
             </Container>
 
-            <Footer />
         </>
     );
 };
