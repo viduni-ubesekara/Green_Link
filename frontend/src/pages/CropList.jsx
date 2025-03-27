@@ -1,195 +1,150 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Paper, Typography, Grid, Button } from '@mui/material';
-import { getCropById, deleteCrop } from '../services/api';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import html2pdf from 'html2pdf.js';
-
+import { useNavigate } from 'react-router-dom';
+import { Container, Paper, Typography, Grid, Button, CircularProgress, Alert } from '@mui/material';
+import { getCrops } from '../services/api';  // ✅ Corrected function name
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-// Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend, ArcElement);
-
-const CropDetails = () => {
-    const { id } = useParams();
+const CropList = () => {
     const navigate = useNavigate();
-    const [crop, setCrop] = useState(null);
+    const [crops, setCrops] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const loadCrop = async () => {
+        const fetchCrops = async () => {
             try {
-                const response = await getCropById(id);
-                setCrop(response.data);
+                const response = await getCrops();  // ✅ Corrected function call
+                if (!response || !response.data) {
+                    throw new Error("Invalid API response");
+                }
+                setCrops(response.data);
                 setError(null);
             } catch (err) {
-                setError('Unable to fetch crop details. Please try again later.');
+                console.error("Error fetching crops:", err);
+                setError("Unable to fetch crops. Please try again later.");
+            } finally {
+                setLoading(false);
             }
         };
-        loadCrop();
-    }, [id]);
+        fetchCrops();
+    }, []);
 
-    if (error) return <div>{error}</div>;
-    if (!crop) return <div>Loading...</div>;
+    // Function to generate a CSV report
+    const handleGenerateCSV = () => {
+        const header = [
+            'Name', 'Type', 'Season', 'Yield per Acre', 'Weather Dependency', 
+            'Pest Control', 'Fertilizer Schedule', 'Fertilizer Type', 
+            'Watering Schedule', 'Soil Type', 'Planting Date', 'Expected Harvest Date'
+        ];
 
-    const calculateGrowthStatus = (plantingDate, harvestingDate) => {
-        const now = new Date();
-        const planting = new Date(plantingDate);
-        const harvesting = new Date(harvestingDate);
-        const totalGrowthTime = harvesting - planting;
-        const elapsedTime = now - planting;
-        const growthPercentage = Math.min((elapsedTime / totalGrowthTime) * 100, 100);
+        // Mapping the crops data to rows
+        const rows = crops.map((crop) => [
+            crop.name, 
+            crop.type, 
+            crop.season, 
+            crop.yieldPerAcre, 
+            crop.weatherDependency || 'N/A',
+            crop.pestControl || 'N/A', 
+            crop.fertilizerSchedule || 'N/A', 
+            crop.fertilizerType || 'N/A', 
+            crop.wateringSchedule || 'N/A', 
+            crop.soilType || 'N/A', 
+            crop.plantingDate ? new Date(crop.plantingDate).toLocaleDateString() : 'N/A', 
+            crop.expectedHarvestDate ? new Date(crop.expectedHarvestDate).toLocaleDateString() : 'N/A'
+        ]);
 
-        if (now < planting) {
-            return { status: 'Not Planted', progress: 0 };
-        } else if (now >= planting && now <= harvesting) {
-            return { status: 'Growing', progress: growthPercentage };
-        } else {
-            return { status: 'Harvested', progress: 100 };
-        }
+        // Converting to CSV format
+        const csvContent = [
+            header.join(','), // Adding header row
+            ...rows.map(row => row.join(','))  // Adding data rows
+        ].join('\n');
+
+        // Creating a Blob and downloading the file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Crop_Report.csv';  // Filename for the CSV
+        link.click();
     };
 
-    const { status, progress } = calculateGrowthStatus(crop.plantingDate, crop.expectedHarvestDate);
+    if (loading) {
+        return (
+            <Container sx={{ textAlign: 'center', marginTop: 4 }}>
+                <CircularProgress />
+                <Typography>Loading crops...</Typography>
+            </Container>
+        );
+    }
 
-    const pieChartData = {
-        labels: ['Growth Progress', 'Remaining Time'],
-        datasets: [
-            {
-                data: [progress, 100 - progress],
-                backgroundColor: ['#4caf50', '#e0e0e0'],
-                borderColor: ['#4caf50', '#e0e0e0'],
-                borderWidth: 1,
-            },
-        ],
-    };
-
-    const pieChartOptions = {
-        responsive: true,
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    // Show percentage in tooltip
-                    label: function (tooltipItem) {
-                        const total = tooltipItem.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                        const value = tooltipItem.raw;
-                        const percentage = ((value / total) * 100).toFixed(2);
-                        return `${tooltipItem.label}: ${percentage}%`;
-                    },
-                },
-            },
-            datalabels: {
-                formatter: function (value, ctx) {
-                    const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                    const percentage = ((value / total) * 100).toFixed(2);
-                    return `${percentage}%`; // Show percentage on slices
-                },
-                color: 'white',
-                font: {
-                    weight: 'bold',
-                },
-            },
-        },
-    };
-
-    const handleDelete = async () => {
-        const confirmDelete = window.confirm('Are you sure you want to delete this crop?');
-        if (confirmDelete) {
-            try {
-                await deleteCrop(id);
-                navigate('/');
-            } catch (err) {
-                console.error('Error deleting crop:', err);
-            }
-        }
-    };
-
-    const handleGenerateReport = () => {
-        const element = document.getElementById('crop-details-no-buttons');
-        const options = {
-            filename: `${crop.name}-report.pdf`,
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        };
-        html2pdf().from(element).set(options).save();
-    };
+    if (error) {
+        return (
+            <Container sx={{ textAlign: 'center', marginTop: 4 }}>
+                <Alert severity="error">{error}</Alert>
+            </Container>
+        );
+    }
 
     return (
         <>
             <Header />
-
-            <Container maxWidth="sm">
-                <Paper elevation={3} sx={{ padding: 3, marginTop: 4 }} id="crop-details-no-buttons">
-                    <Typography variant="h5" gutterBottom>My Crops</Typography>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                            <Typography variant="h6">Crop Name: {crop.name}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Type:</strong> {crop.type}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Season:</strong> {crop.season}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Yield per Acre:</strong> {crop.yieldPerAcre}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Weather Dependency:</strong> {crop.weatherDependency || 'N/A'}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Pest Control:</strong> {crop.pestControl || 'N/A'}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Fertilizer Schedule:</strong> {crop.fertilizerSchedule || 'N/A'}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Fertilizer Type:</strong> {crop.fertilizerType || 'N/A'}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Watering Schedule:</strong> {crop.wateringSchedule || 'N/A'}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Soil Type:</strong> {crop.soilType || 'N/A'}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Expected Harvest Date:</strong> {crop.expectedHarvestDate ? new Date(crop.expectedHarvestDate).toLocaleDateString() : 'N/A'}</Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Typography><strong>Planting Date:</strong> {crop.plantingDate ? new Date(crop.plantingDate).toLocaleDateString() : 'N/A'}</Typography>
-                        </Grid>
-                    </Grid>
-
-                    <Paper elevation={2} sx={{ padding: 2, marginTop: 4 }}>
-                        <Typography variant="h6" gutterBottom>Growth Status</Typography>
-                        <Typography variant="body1" gutterBottom>Status: {status}</Typography>
-                        <Pie data={pieChartData} options={pieChartOptions} />
-                    </Paper>
-
-                    <Grid container spacing={2} justifyContent="center" sx={{ marginTop: 4 }}>
-                        <Grid item>
-                            <Button variant="contained" color="primary" onClick={handleGenerateReport}>
-                                Generate Report
-                            </Button>
-                        </Grid>
-                        <Grid item>
-                            <Button variant="contained" color="secondary" onClick={handleDelete}>
-                                Delete Crop
-                            </Button>
-                        </Grid>
-                        <Grid item>
-                            <Button variant="contained" color="warning" onClick={() => navigate(`/edit-crop/${id}`)}>
-                                Edit Crop
-                            </Button>
-                        </Grid>
+            <Container maxWidth="md" sx={{ marginTop: 4 }}>
+                <Typography variant="h4" gutterBottom>
+                    My Crops
+                </Typography>
+                
+                <Paper elevation={3} sx={{ padding: 3, marginTop: 2 }}>
+                    <Grid container spacing={3}>
+                        {crops.length > 0 ? (
+                            crops.map((crop) => (
+                                <Grid item xs={12} sm={6} md={4} key={crop._id}>
+                                    <Paper elevation={3} sx={{ padding: 2, textAlign: 'center' }}>
+                                        <Typography variant="h6">{crop.name}</Typography>
+                                        
+                                        <Button
+                                            variant="contained"
+                                            color="success"  // Green button
+                                            sx={{ marginTop: 2 }}
+                                            onClick={() => navigate(`/crop/${crop._id}`)}
+                                        >
+                                            View Details
+                                        </Button>
+                                    </Paper>
+                                </Grid>
+                            ))
+                        ) : (
+                            <Grid item xs={12}>
+                                <Typography variant="body1">No crops found.</Typography>
+                            </Grid>
+                        )}
                     </Grid>
                 </Paper>
-            </Container>
 
+                {/* Add Crop & Generate CSV Buttons */}
+                <Grid container spacing={2} justifyContent="center" sx={{ marginTop: 4 }}>
+                    <Grid item>
+                        <Button
+                            variant="contained"
+                            color="success"  // Green button
+                            onClick={() => navigate('/add-crop')}
+                        >
+                            Add New Crop
+                        </Button>
+                    </Grid>
+                    <Grid item>
+                        <Button
+                            variant="contained"
+                            color="success"  // Green button
+                            onClick={handleGenerateCSV}
+                        >
+                            Generate Report
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Container>
             <Footer />
         </>
     );
 };
 
-export default CropDetails;
+export default CropList;
