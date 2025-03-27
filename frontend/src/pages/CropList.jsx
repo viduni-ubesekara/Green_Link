@@ -121,7 +121,7 @@ const CropDetails = () => {
 
             <Container maxWidth="sm">
                 <Paper elevation={3} sx={{ padding: 3, marginTop: 4 }} id="crop-details-no-buttons">
-                    <Typography variant="h5" gutterBottom>Crop Details</Typography>
+                    <Typography variant="h5" gutterBottom>My Crops</Typography>
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
                             <Typography variant="h6">Crop Name: {crop.name}</Typography>
