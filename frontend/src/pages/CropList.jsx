@@ -4,6 +4,9 @@ import { Container, Paper, Typography, Grid, Button, CircularProgress, Alert, Te
 import { getCrops } from '../services/api';
 import { motion } from 'framer-motion';
 import AddIcon from '@mui/icons-material/Add';
+import CropIcon from '@mui/icons-material/Grain'; // For Vegetables (Crops)
+import AppleIcon from '@mui/icons-material/Apple'; // For Fruits
+import GrainIcon from '@mui/icons-material/Grain'; // For Grains
 
 const CropList = () => {
     const navigate = useNavigate();
@@ -35,7 +38,7 @@ const CropList = () => {
 
     useEffect(() => {
         setFilteredCrops(
-            crops.filter(crop => 
+            crops.filter(crop =>
                 crop.name.toLowerCase().includes(searchQuery.toLowerCase())
             )
         );
@@ -50,6 +53,19 @@ const CropList = () => {
         link.href = URL.createObjectURL(blob);
         link.download = 'Crop_Report.csv';
         link.click();
+    };
+
+    const getCropIcon = (type) => {
+        switch (type) {
+            case 'Vegetable':
+                return <CropIcon sx={{ fontSize: 40, color: '#388e3c' }} />;
+            case 'vegetable':
+                return <AppleIcon sx={{ fontSize: 40, color: '#ff7043' }} />;
+            case 'vegetable':
+                return <GrainIcon sx={{ fontSize: 40, color: '#29b6f6' }} />;
+            default:
+                return <CropIcon sx={{ fontSize: 40, color: '#388e3c' }} />;
+        }
     };
 
     if (loading) {
@@ -127,6 +143,7 @@ const CropList = () => {
                             <Grid item xs={12} sm={6} md={4} key={crop._id}>
                                 <motion.div whileHover={{ scale: 1.05 }} transition={{ type: 'spring', stiffness: 300 }}>
                                     <Paper elevation={3} sx={{ padding: 2, textAlign: 'center' }}>
+                                        <div>{getCropIcon(crop.type)}</div>
                                         <Typography variant="h6">{crop.name}</Typography>
                                         <Button 
                                             variant="contained" 
