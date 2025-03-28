@@ -166,6 +166,11 @@ const CropDetails = () => {
                                 <TableCell sx={{ fontWeight: 'bold', color: '#388e3c' }}>Planting Date</TableCell>
                                 <TableCell>{crop.plantingDate ? new Date(crop.plantingDate).toLocaleDateString() : 'N/A'}</TableCell>
                             </TableRow>
+                            {/* Added Phone Number Row */}
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 'bold', color: '#388e3c' }}>Phone Number</TableCell>
+                                <TableCell>{crop.phone}</TableCell>
+                            </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>

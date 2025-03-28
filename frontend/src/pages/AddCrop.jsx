@@ -26,7 +26,21 @@ const AddCrop = () => {
     const navigate = useNavigate();
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        
+        let newValue = value;
+
+        // Convert phone to a string and remove non-numeric characters
+        if (name === 'phone') {
+            newValue = value.replace(/\D/g, ''); // Removes all non-numeric characters
+        }
+
+        // Convert yieldPerAcre to a number
+        if (name === 'yieldPerAcre') {
+            newValue = value ? parseFloat(value) : '';
+        }
+
+        setForm({ ...form, [name]: newValue });
     };
 
     const validateForm = () => {
@@ -34,29 +48,30 @@ const AddCrop = () => {
         const plantingDate = new Date(form.plantingDate);
         const expectedHarvestDate = new Date(form.expectedHarvestDate);
         
-        // Crop validation
-        if (!form.name) errors.name = 'Crop Name is required';
-        if (!form.type) errors.type = 'Crop Type is required';
-        if (!form.season) errors.season = 'Season is required';
-        if (!form.soilType) errors.soilType = 'Soil Type is required';
-        if (!form.fertilizerSchedule) errors.fertilizerSchedule = 'Fertilizer Schedule is required';
-        if (!form.fertilizerType) errors.fertilizerType = 'Fertilizer Type is required';
-        if (!form.wateringSchedule) errors.wateringSchedule = 'Watering Schedule is required';
-        if (!form.pestControl) errors.pestControl = 'Pest Control information is required';
-        if (!form.weatherDependency) errors.weatherDependency = 'Weather Dependency is required';
-        if (!form.plantingDate) errors.plantingDate = 'Planting Date is required';
-        if (!form.expectedHarvestDate) errors.expectedHarvestDate = 'Expected Harvest Date is required';
+        // Required fields validation
+        const requiredFields = ['name', 'type', 'season', 'soilType', 'fertilizerSchedule', 'fertilizerType', 'wateringSchedule', 'pestControl', 'weatherDependency', 'plantingDate', 'expectedHarvestDate'];
+
+        requiredFields.forEach(field => {
+            if (!form[field]) errors[field] = `${field.replace(/([A-Z])/g, ' $1')} is required`;
+        });
+
+        // Date validation
         if (expectedHarvestDate <= plantingDate) {
             errors.expectedHarvestDate = 'Expected Harvest Date must be after the Planting Date';
         }
-        if (form.yieldPerAcre && isNaN(form.yieldPerAcre)) {
-            errors.yieldPerAcre = 'Yield per Acre must be a valid number';
+
+        // Yield validation
+        if (form.yieldPerAcre && (isNaN(form.yieldPerAcre) || form.yieldPerAcre < 0)) {
+            errors.yieldPerAcre = 'Yield per Acre must be a valid positive number';
         }
 
-        // Phone validation: Only 10 digits and numbers
+        // Phone number validation: Must be exactly 10 digits
         const phoneRegex = /^[0-9]{10}$/;
-        if (!form.phone) errors.phone = 'Phone number is required';
-        else if (!phoneRegex.test(form.phone)) errors.phone = 'Phone number must be exactly 10 digits and contain only numbers';
+        if (!form.phone) {
+            errors.phone = 'Phone number is required';
+        } else if (!phoneRegex.test(form.phone)) {
+            errors.phone = 'Phone number must be exactly 10 digits';
+        }
 
         return errors;
     };
@@ -96,14 +111,14 @@ const AddCrop = () => {
                             <Grid item xs={12} key={key}>
                                 <TextField
                                     fullWidth
-                                    type={key.includes('Date') ? 'date' : key === 'phone' ? 'tel' : 'text'}
+                                    type={key.includes('Date') ? 'date' : key === 'phone' ? 'tel' : key === 'yieldPerAcre' ? 'number' : 'text'}
                                     name={key}
                                     label={key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
                                     value={form[key]}
                                     onChange={handleChange}
                                     InputLabelProps={key.includes('Date') ? { shrink: true } : {}}
                                     error={!!errorMessages[key]}
-                                    helperText={key === 'phone' ? 'Phone number is required for sending reminders.' : errorMessages[key] || ''}
+                                    helperText={errorMessages[key] || (key === 'phone' ? 'Enter a 10-digit phone number' : '')}
                                 />
                             </Grid>
                         ))}
