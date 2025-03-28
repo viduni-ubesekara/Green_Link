@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Paper, Typography, Grid, Button, CircularProgress, Alert } from '@mui/material';
+import { Container, Paper, Typography, Grid, Button, CircularProgress, Alert, TextField } from '@mui/material';
 import { getCrops } from '../services/api';
 import { motion } from 'framer-motion';
 import AddIcon from '@mui/icons-material/Add';
@@ -8,8 +8,10 @@ import AddIcon from '@mui/icons-material/Add';
 const CropList = () => {
     const navigate = useNavigate();
     const [crops, setCrops] = useState([]);
+    const [filteredCrops, setFilteredCrops] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchCrops = async () => {
@@ -19,6 +21,7 @@ const CropList = () => {
                     throw new Error("Invalid API response");
                 }
                 setCrops(response.data);
+                setFilteredCrops(response.data);
                 setError(null);
             } catch (err) {
                 console.error("Error fetching crops:", err);
@@ -29,6 +32,14 @@ const CropList = () => {
         };
         fetchCrops();
     }, []);
+
+    useEffect(() => {
+        setFilteredCrops(
+            crops.filter(crop => 
+                crop.name.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+        );
+    }, [searchQuery, crops]);
 
     const handleGenerateCSV = () => {
         const header = ['Name', 'Type', 'Season', 'Yield per Acre', 'Weather Dependency', 'Pest Control', 'Fertilizer Schedule', 'Fertilizer Type', 'Watering Schedule', 'Soil Type', 'Planting Date', 'Expected Harvest Date'];
@@ -68,9 +79,19 @@ const CropList = () => {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
-                <Typography variant="h4" gutterBottom>
-                    My Crops
+                <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold', color: '#2e7d32', fontFamily: 'cursive' }}>
+                    🌿 Farm Tracker 🌾
                 </Typography>
+
+                {/* Search Bar */}
+                <TextField 
+                    label="Search Crops" 
+                    variant="outlined" 
+                    fullWidth 
+                    sx={{ marginBottom: 3, borderRadius: '20px', overflow: 'hidden', border: '1px solid #ccc' }}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
 
                 {/* "Add New Crop" Button Before Crop List */}
                 <Grid container justifyContent="center" sx={{ marginBottom: 3 }}>
@@ -101,8 +122,8 @@ const CropList = () => {
 
                 {/* Crops List */}
                 <Grid container spacing={3} justifyContent="center">
-                    {crops.length > 0 ? (
-                        crops.map((crop) => (
+                    {filteredCrops.length > 0 ? (
+                        filteredCrops.map((crop) => (
                             <Grid item xs={12} sm={6} md={4} key={crop._id}>
                                 <motion.div whileHover={{ scale: 1.05 }} transition={{ type: 'spring', stiffness: 300 }}>
                                     <Paper elevation={3} sx={{ padding: 2, textAlign: 'center' }}>
