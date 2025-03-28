@@ -25,7 +25,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Add a new crop
+/*
 router.post('/', async (req, res) => {
     const {
         name, type, season, yieldPerAcre, weatherDependency,
@@ -68,6 +68,60 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: `Internal Server Error: ${err.message}` });
     }
 });
+*/
+// Add a new crop
+router.post('/', async (req, res) => {
+    const {
+        name, type, phone, season, yieldPerAcre, weatherDependency,
+        pestControl, fertilizerSchedule, fertilizerType,
+        wateringSchedule, soilType, expectedHarvestDate, plantingDate
+    } = req.body;
+
+    console.log('Received data:', req.body); // Debugging: Logs incoming request data
+
+    // Ensure phone number is provided
+    if (!phone) {
+        return res.status(400).json({ error: 'Phone number is required.' });
+    }
+
+    // Check if all required fields are provided
+    if (!name || !type || !season || !yieldPerAcre) {
+        return res.status(400).json({ error: 'Missing required fields. Name, type, season, and yield per acre are required.' });
+    }
+
+    try {
+        // Create a new crop with the provided data
+        const newCrop = new Crop({
+            name,
+            type,
+            phone,  // ✅ Ensure phone is included
+            season,
+            yieldPerAcre,
+            weatherDependency,
+            pestControl,
+            fertilizerSchedule,
+            fertilizerType,
+            wateringSchedule,
+            soilType,
+            expectedHarvestDate,
+            plantingDate
+        });
+
+        // Save the crop to the database
+        await newCrop.save();
+
+        // Respond with a success message
+        res.status(201).json({ message: 'Crop added successfully', crop: newCrop });
+    } catch (err) {
+        // Log the error and respond with a detailed error message
+        console.error('Error adding crop:', err);
+        res.status(500).json({ error: `Internal Server Error: ${err.message}` });
+    }
+});
+
+
+
+
 
 // Update a crop
 router.put('/:id', async (req, res) => {
