@@ -4,6 +4,7 @@ import { Container, Paper, Typography, Grid, Button, CircularProgress, Alert, Te
 import { getCrops } from '../services/api';
 import { motion } from 'framer-motion';
 import AddIcon from '@mui/icons-material/Add';
+import GrainIcon from '@mui/icons-material/Grain'; // For Grains
 
 const CropList = () => {
     const navigate = useNavigate();
@@ -35,7 +36,7 @@ const CropList = () => {
 
     useEffect(() => {
         setFilteredCrops(
-            crops.filter(crop => 
+            crops.filter(crop =>
                 crop.name.toLowerCase().includes(searchQuery.toLowerCase())
             )
         );
@@ -50,6 +51,11 @@ const CropList = () => {
         link.href = URL.createObjectURL(blob);
         link.download = 'Crop_Report.csv';
         link.click();
+    };
+
+    // Modified getCropIcon function to always return GrainIcon
+    const getCropIcon = () => {
+        return <GrainIcon sx={{ fontSize: 40, color: '#388e3c' }} />;
     };
 
     if (loading) {
@@ -93,8 +99,9 @@ const CropList = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
 
-                {/* "Add New Crop" Button Before Crop List */}
-                <Grid container justifyContent="center" sx={{ marginBottom: 3 }}>
+                {/* Grid container for crops and add new crop button */}
+                <Grid container spacing={3} justifyContent="center" sx={{ marginBottom: 3 }}>
+                    {/* Add New Crop Button */}
                     <Grid item xs={12} sm={6} md={4}>
                         <motion.div whileHover={{ scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}>
                             <Paper 
@@ -118,15 +125,14 @@ const CropList = () => {
                             </Paper>
                         </motion.div>
                     </Grid>
-                </Grid>
 
-                {/* Crops List */}
-                <Grid container spacing={3} justifyContent="center">
+                    {/* Crops List */}
                     {filteredCrops.length > 0 ? (
                         filteredCrops.map((crop) => (
                             <Grid item xs={12} sm={6} md={4} key={crop._id}>
                                 <motion.div whileHover={{ scale: 1.05 }} transition={{ type: 'spring', stiffness: 300 }}>
                                     <Paper elevation={3} sx={{ padding: 2, textAlign: 'center' }}>
+                                        <div>{getCropIcon()}</div> {/* Always displays GrainIcon */}
                                         <Typography variant="h6">{crop.name}</Typography>
                                         <Button 
                                             variant="contained" 
