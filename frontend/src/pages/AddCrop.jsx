@@ -21,18 +21,18 @@ const AddCrop = () => {
         plantingDate: '',
         expectedHarvestDate: '',
     });
+
     const [errorMessages, setErrorMessages] = useState({});
     const [successMessage, setSuccessMessage] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        
         let newValue = value;
 
-        // Convert phone to a string and remove non-numeric characters
+        // Restrict phone input to exactly 10 digits
         if (name === 'phone') {
-            newValue = value.replace(/\D/g, ''); // Removes all non-numeric characters
+            newValue = value.replace(/\D/g, '').slice(0, 10); // Only allow numbers and limit to 10 digits
         }
 
         // Convert yieldPerAcre to a number

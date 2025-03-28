@@ -73,12 +73,17 @@ const CropDetails = () => {
     };
 
     const handleGenerateReport = () => {
-        const element = document.getElementById('crop-details-no-buttons');
+        // Exclude the action buttons by targeting only the crop details container
+        const element = document.getElementById('crop-details-container');
+        
+        // Options for the PDF generation
         const options = {
             filename: `${crop.name}-report.pdf`,
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         };
+        
+        // Use html2pdf to convert the selected content into a PDF
         html2pdf().from(element).set(options).save();
     };
 
@@ -87,7 +92,7 @@ const CropDetails = () => {
 
     return (
         <Container maxWidth="lg" sx={{ padding: 0 }}>
-            <Paper elevation={3} sx={{ padding: 3, marginTop: 4 }} id="crop-details-no-buttons">
+            <Paper elevation={3} sx={{ padding: 3, marginTop: 4 }} id="crop-details-container">
                 {/* Home Icon Button in the top-right corner */}
                 <IconButton 
                     onClick={() => navigate('/')} 
@@ -174,6 +179,9 @@ const CropDetails = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                
+                {/* Adding Page Break for Second Page */}
+                <div style={{ pageBreakAfter: 'always' }}></div>
 
                 {/* Growth Status & Pie Chart */}
                 <Paper elevation={2} sx={{ padding: 2, marginTop: 4 }}>
@@ -183,26 +191,26 @@ const CropDetails = () => {
                         <Pie data={pieChartData} />
                     </div>
                 </Paper>
-
-                {/* Action Buttons */}
-                <Grid container spacing={2} justifyContent="center" sx={{ marginTop: 4 }}>
-                    <Grid item>
-                        <Button variant="contained" color="success" onClick={handleGenerateReport}>
-                            Generate Report
-                        </Button>
-                    </Grid>
-                    <Grid item>
-                        <Button variant="contained" color="error" onClick={openDeleteDialog}>
-                            Delete Crop
-                        </Button>
-                    </Grid>
-                    <Grid item>
-                        <Button variant="contained" color="success" onClick={() => navigate(`/edit-crop/${id}`)}>
-                            Edit Crop
-                        </Button>
-                    </Grid>
-                </Grid>
             </Paper>
+
+            {/* Action Buttons */}
+            <Grid container spacing={2} justifyContent="center" sx={{ marginTop: 4 }}>
+                <Grid item>
+                    <Button variant="contained" color="success" onClick={handleGenerateReport}>
+                        Generate Report
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" color="error" onClick={openDeleteDialog}>
+                        Delete Crop
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" color="success" onClick={() => navigate(`/edit-crop/${id}`)}>
+                        Edit Crop
+                    </Button>
+                </Grid>
+            </Grid>
 
             {/* Confirmation Dialog */}
             <Dialog open={openDialog} onClose={closeDeleteDialog}>
