@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const cropSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    type: { type: String, required: true },
+    type: { type: String, required: true, enum: ['Vegetable', 'Fruits', 'Grains'] }, // Restrict type values
     season: { type: String, required: true },
     yieldPerAcre: { type: Number, required: true },
     weatherDependency: { type: String, required: false },
