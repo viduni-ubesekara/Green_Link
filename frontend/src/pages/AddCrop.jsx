@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TextField, Button, Container, Typography, Paper, Grid, MenuItem, Snackbar, Alert } from '@mui/material';
+import { TextField, Button, Container, Typography, Paper, Grid, Snackbar, Alert } from '@mui/material';
 import { addCrop } from '../services/api';
 import { motion } from 'framer-motion';
 import CropIcon from '@mui/icons-material/Grain';
 
-const cropTypes = ['Vegetable', 'Fruit', 'Grain'];
-
 const AddCrop = () => {
     const [form, setForm] = useState({
         name: '',
+        phone: '', 
         type: '',
         season: '',
         yieldPerAcre: '',
@@ -19,8 +18,8 @@ const AddCrop = () => {
         fertilizerType: '',
         wateringSchedule: '',
         soilType: '',
+        plantingDate: '',
         expectedHarvestDate: '',
-        plantingDate: ''
     });
     const [errorMessages, setErrorMessages] = useState({});
     const [successMessage, setSuccessMessage] = useState(false);
@@ -34,7 +33,8 @@ const AddCrop = () => {
         const errors = {};
         const plantingDate = new Date(form.plantingDate);
         const expectedHarvestDate = new Date(form.expectedHarvestDate);
-
+        
+        // Crop validation
         if (!form.name) errors.name = 'Crop Name is required';
         if (!form.type) errors.type = 'Crop Type is required';
         if (!form.season) errors.season = 'Season is required';
@@ -52,6 +52,12 @@ const AddCrop = () => {
         if (form.yieldPerAcre && isNaN(form.yieldPerAcre)) {
             errors.yieldPerAcre = 'Yield per Acre must be a valid number';
         }
+
+        // Phone validation: Only 10 digits and numbers
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!form.phone) errors.phone = 'Phone number is required';
+        else if (!phoneRegex.test(form.phone)) errors.phone = 'Phone number must be exactly 10 digits and contain only numbers';
+
         return errors;
     };
 
@@ -90,20 +96,15 @@ const AddCrop = () => {
                             <Grid item xs={12} key={key}>
                                 <TextField
                                     fullWidth
-                                    type={key.includes('Date') ? 'date' : 'text'}
+                                    type={key.includes('Date') ? 'date' : key === 'phone' ? 'tel' : 'text'}
                                     name={key}
                                     label={key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
                                     value={form[key]}
                                     onChange={handleChange}
                                     InputLabelProps={key.includes('Date') ? { shrink: true } : {}}
-                                    select={key === 'type'}
                                     error={!!errorMessages[key]}
-                                    helperText={errorMessages[key] || ''}
-                                >
-                                    {key === 'type' && cropTypes.map((option) => (
-                                        <MenuItem key={option} value={option}>{option}</MenuItem>
-                                    ))}
-                                </TextField>
+                                    helperText={key === 'phone' ? 'Phone number is required for sending reminders.' : errorMessages[key] || ''}
+                                />
                             </Grid>
                         ))}
                     </Grid>
