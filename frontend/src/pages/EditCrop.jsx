@@ -19,6 +19,7 @@ const EditCrop = () => {
         expectedHarvestDate: '',
         plantingDate: ''
     });
+    const [errorMessages, setErrorMessages] = useState({});
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -39,8 +40,43 @@ const EditCrop = () => {
         setCrop({ ...crop, [name]: value });
     };
 
+    const validateForm = () => {
+        const errors = {};
+        const plantingDate = new Date(crop.plantingDate);
+        const expectedHarvestDate = new Date(crop.expectedHarvestDate);
+
+        if (!crop.name) errors.name = 'Crop Name is required';
+        if (!crop.type) errors.type = 'Crop Type is required';
+        if (!crop.season) errors.season = 'Season is required';
+        if (!crop.soilType) errors.soilType = 'Soil Type is required';
+        if (!crop.fertilizerSchedule) errors.fertilizerSchedule = 'Fertilizer Schedule is required';
+        if (!crop.fertilizerType) errors.fertilizerType = 'Fertilizer Type is required';
+        if (!crop.wateringSchedule) errors.wateringSchedule = 'Watering Schedule is required';
+        if (!crop.pestControl) errors.pestControl = 'Pest Control information is required';
+        if (!crop.weatherDependency) errors.weatherDependency = 'Weather Dependency is required';
+        if (!crop.plantingDate) errors.plantingDate = 'Planting Date is required';
+        if (!crop.expectedHarvestDate) errors.expectedHarvestDate = 'Expected Harvest Date is required';
+
+        if (expectedHarvestDate <= plantingDate) {
+            errors.expectedHarvestDate = 'Expected Harvest Date must be after the Planting Date';
+        }
+
+        if (crop.yieldPerAcre && isNaN(crop.yieldPerAcre)) {
+            errors.yieldPerAcre = 'Yield per Acre must be a valid number';
+        }
+
+        return errors;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const errors = validateForm();
+
+        if (Object.keys(errors).length > 0) {
+            setErrorMessages(errors);
+            return;
+        }
+
         try {
             await updateCrop(id, crop); // Update crop details
             navigate(`/crop/${id}`); // Redirect back to crop details page
@@ -65,6 +101,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.name && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.name}</div>}
                 </div>
                 <div style={{ marginBottom: '15px' }}>
                     <label>Type:</label>
@@ -75,6 +112,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.type && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.type}</div>}
                 </div>
                 <div style={{ marginBottom: '15px' }}>
                     <label>Season:</label>
@@ -85,6 +123,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.season && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.season}</div>}
                 </div>
                 <div style={{ marginBottom: '15px' }}>
                     <label>Yield per Acre:</label>
@@ -95,6 +134,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.yieldPerAcre && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.yieldPerAcre}</div>}
                 </div>
                 <div style={{ marginBottom: '15px' }}>
                     <label>Soil Type:</label>
@@ -105,10 +145,11 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.soilType && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.soilType}</div>}
                 </div>
 
                 {/* Add more fields for other crop details */}
-                
+
                 <div style={{ marginBottom: '15px' }}>
                     <label>Weather Dependency:</label>
                     <input
@@ -118,6 +159,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.weatherDependency && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.weatherDependency}</div>}
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
@@ -129,6 +171,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.pestControl && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.pestControl}</div>}
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
@@ -140,6 +183,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.fertilizerSchedule && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.fertilizerSchedule}</div>}
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
@@ -151,6 +195,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.fertilizerType && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.fertilizerType}</div>}
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
@@ -162,6 +207,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.wateringSchedule && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.wateringSchedule}</div>}
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
@@ -173,6 +219,7 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.expectedHarvestDate && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.expectedHarvestDate}</div>}
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
@@ -184,10 +231,11 @@ const EditCrop = () => {
                         onChange={handleChange}
                         style={{ width: '100%', padding: '8px', marginTop: '5px' }}
                     />
+                    {errorMessages.plantingDate && <div style={{ color: 'red', fontSize: '12px' }}>{errorMessages.plantingDate}</div>}
                 </div>
 
-                <button 
-                    type="submit" 
+                <button
+                    type="submit"
                     style={{
                         padding: '10px 20px',
                         backgroundColor: '#4CAF50',
