@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCropById, updateCrop } from '../services/api';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography, Box, TextField } from '@mui/material';
 
 const EditCrop = () => {
     const { id } = useParams();
@@ -22,7 +22,7 @@ const EditCrop = () => {
     });
     const [errorMessages, setErrorMessages] = useState({});
     const [error, setError] = useState(null);
-    const [openSuccessDialog, setOpenSuccessDialog] = useState(false);  // State to manage the success dialog visibility
+    const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
 
     useEffect(() => {
         const loadCrop = async () => {
@@ -78,10 +78,10 @@ const EditCrop = () => {
 
         try {
             await updateCrop(id, crop);
-            setOpenSuccessDialog(true);  // Open the success dialog
+            setOpenSuccessDialog(true);
             setTimeout(() => {
                 navigate(`/crop/${id}`);
-            }, 2000);  // Redirect after 2 seconds
+            }, 2000);
         } catch (err) {
             console.error("Error updating crop:", err);
             setError('Unable to update crop details. Please try again later.');
@@ -89,155 +89,154 @@ const EditCrop = () => {
     };
 
     const handleCloseDialog = () => {
-        setOpenSuccessDialog(false);  // Close the dialog
+        setOpenSuccessDialog(false);
     };
 
     if (error) return <div style={{ textAlign: 'center', color: 'red', marginTop: '20px' }}>{error}</div>;
 
     return (
-        <div style={styles.container}>
-            <h2 style={styles.heading}>Edit Crop Details</h2>
-            <form onSubmit={handleSubmit} style={styles.form}>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Crop Name:</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={crop.name}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.name && <div style={styles.errorText}>{errorMessages.name}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Crop Type:</label>
-                    <input
-                        type="text"
-                        name="type"
-                        value={crop.type}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.type && <div style={styles.errorText}>{errorMessages.type}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Season:</label>
-                    <input
-                        type="text"
-                        name="season"
-                        value={crop.season}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.season && <div style={styles.errorText}>{errorMessages.season}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Yield per Acre:</label>
-                    <input
-                        type="number"
-                        name="yieldPerAcre"
-                        value={crop.yieldPerAcre}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.yieldPerAcre && <div style={styles.errorText}>{errorMessages.yieldPerAcre}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Soil Type:</label>
-                    <input
-                        type="text"
-                        name="soilType"
-                        value={crop.soilType}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.soilType && <div style={styles.errorText}>{errorMessages.soilType}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Weather Dependency:</label>
-                    <input
-                        type="text"
-                        name="weatherDependency"
-                        value={crop.weatherDependency || ''}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.weatherDependency && <div style={styles.errorText}>{errorMessages.weatherDependency}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Pest Control:</label>
-                    <input
-                        type="text"
-                        name="pestControl"
-                        value={crop.pestControl || ''}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.pestControl && <div style={styles.errorText}>{errorMessages.pestControl}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Fertilizer Schedule:</label>
-                    <input
-                        type="text"
-                        name="fertilizerSchedule"
-                        value={crop.fertilizerSchedule || ''}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.fertilizerSchedule && <div style={styles.errorText}>{errorMessages.fertilizerSchedule}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Fertilizer Type:</label>
-                    <input
-                        type="text"
-                        name="fertilizerType"
-                        value={crop.fertilizerType || ''}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.fertilizerType && <div style={styles.errorText}>{errorMessages.fertilizerType}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Watering Schedule:</label>
-                    <input
-                        type="text"
-                        name="wateringSchedule"
-                        value={crop.wateringSchedule || ''}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.wateringSchedule && <div style={styles.errorText}>{errorMessages.wateringSchedule}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Planting Date:</label>
-                    <input
-                        type="date"
-                        name="plantingDate"
-                        value={crop.plantingDate ? crop.plantingDate.split('T')[0] : ''}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.plantingDate && <div style={styles.errorText}>{errorMessages.plantingDate}</div>}
-                </div>
-                <div style={styles.formGroup}>
-                    <label style={styles.label}>Expected Harvest Date:</label>
-                    <input
-                        type="date"
-                        name="expectedHarvestDate"
-                        value={crop.expectedHarvestDate ? crop.expectedHarvestDate.split('T')[0] : ''}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-                    {errorMessages.expectedHarvestDate && <div style={styles.errorText}>{errorMessages.expectedHarvestDate}</div>}
-                </div>
-                <button type="submit" style={styles.submitButton}>Update Crop</button>
+        <Box sx={{ padding: '30px', maxWidth: '900px', margin: '0 auto', border: '1px solid #e0e0e0', borderRadius: '10px', boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff' }}>
+            <Typography variant="h3" sx={{
+                textAlign: 'center',
+                fontWeight: 600,
+                marginBottom: '20px',
+                background: 'linear-gradient(to right, #4CAF50, #8BC34A)', 
+                backgroundClip: 'text',
+                color: 'transparent',
+                WebkitBackgroundClip: 'text',
+                textShadow: '2px 2px 5px rgba(0, 0, 0, 0.2)',
+            }}>
+                Edit Crop Details
+            </Typography>
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <TextField
+                    label="Crop Name"
+                    name="name"
+                    value={crop.name}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.name}
+                    helperText={errorMessages.name}
+                />
+                <TextField
+                    label="Crop Type"
+                    name="type"
+                    value={crop.type}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.type}
+                    helperText={errorMessages.type}
+                />
+                <TextField
+                    label="Season"
+                    name="season"
+                    value={crop.season}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.season}
+                    helperText={errorMessages.season}
+                />
+                <TextField
+                    label="Yield per Acre"
+                    name="yieldPerAcre"
+                    value={crop.yieldPerAcre}
+                    onChange={handleChange}
+                    fullWidth
+                    type="number"
+                    error={!!errorMessages.yieldPerAcre}
+                    helperText={errorMessages.yieldPerAcre}
+                />
+                <TextField
+                    label="Soil Type"
+                    name="soilType"
+                    value={crop.soilType}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.soilType}
+                    helperText={errorMessages.soilType}
+                />
+                <TextField
+                    label="Weather Dependency"
+                    name="weatherDependency"
+                    value={crop.weatherDependency || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.weatherDependency}
+                    helperText={errorMessages.weatherDependency}
+                />
+                <TextField
+                    label="Pest Control"
+                    name="pestControl"
+                    value={crop.pestControl || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.pestControl}
+                    helperText={errorMessages.pestControl}
+                />
+                <TextField
+                    label="Fertilizer Schedule"
+                    name="fertilizerSchedule"
+                    value={crop.fertilizerSchedule || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.fertilizerSchedule}
+                    helperText={errorMessages.fertilizerSchedule}
+                />
+                <TextField
+                    label="Fertilizer Type"
+                    name="fertilizerType"
+                    value={crop.fertilizerType || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.fertilizerType}
+                    helperText={errorMessages.fertilizerType}
+                />
+                <TextField
+                    label="Watering Schedule"
+                    name="wateringSchedule"
+                    value={crop.wateringSchedule || ''}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.wateringSchedule}
+                    helperText={errorMessages.wateringSchedule}
+                />
+                <TextField
+                    label="Planting Date"
+                    name="plantingDate"
+                    type="date"
+                    value={crop.plantingDate ? crop.plantingDate.split('T')[0] : ''}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.plantingDate}
+                    helperText={errorMessages.plantingDate}
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                />
+                <TextField
+                    label="Expected Harvest Date"
+                    name="expectedHarvestDate"
+                    type="date"
+                    value={crop.expectedHarvestDate ? crop.expectedHarvestDate.split('T')[0] : ''}
+                    onChange={handleChange}
+                    fullWidth
+                    error={!!errorMessages.expectedHarvestDate}
+                    helperText={errorMessages.expectedHarvestDate}
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                />
+
+<Button variant="contained" color="success" type="submit" sx={{ padding: '12px 25px', fontSize: '16px' }}>
+    Update Crop
+</Button>
             </form>
 
-            {/* Success Dialog using MUI */}
             <Dialog open={openSuccessDialog} onClose={handleCloseDialog}>
                 <DialogTitle>Success!</DialogTitle>
                 <DialogContent>
-                    <p>Crop details updated successfully.</p>
+                    <Typography variant="body1">Crop details updated successfully.</Typography>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDialog} color="primary">
@@ -245,63 +244,8 @@ const EditCrop = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </Box>
     );
-};
-
-const styles = {
-    container: {
-        padding: '30px',
-        maxWidth: '900px',
-        margin: '0 auto',
-        border: '1px solid #e0e0e0',
-        borderRadius: '10px',
-        boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#fff',
-    },
-    heading: {
-        textAlign: 'center',
-        fontSize: '24px',
-        marginBottom: '20px',
-        color: '#333',
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px',
-    },
-    formGroup: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    label: {
-        fontSize: '16px',
-        color: '#555',
-    },
-    input: {
-        padding: '12px',
-        fontSize: '16px',
-        border: '1px solid #ddd',
-        borderRadius: '5px',
-        marginTop: '8px',
-        outline: 'none',
-        transition: 'border-color 0.3s ease',
-    },
-    submitButton: {
-        padding: '12px 25px',
-        backgroundColor: '#4CAF50',
-        color: '#fff',
-        fontSize: '16px',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s ease',
-    },
-    errorText: {
-        color: 'red',
-        fontSize: '12px',
-        marginTop: '5px',
-    },
 };
 
 export default EditCrop;
