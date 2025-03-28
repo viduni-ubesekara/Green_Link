@@ -1,24 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Paper, Typography, Grid, Button, CircularProgress, Alert } from '@mui/material';
-import { getCrops } from '../services/api';  // ✅ Corrected function name
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { Container, Paper, Typography, Grid, Button, CircularProgress, Alert, TextField } from '@mui/material';
+import { getCrops } from '../services/api';
+import { motion } from 'framer-motion';
+import AddIcon from '@mui/icons-material/Add';
 
 const CropList = () => {
     const navigate = useNavigate();
     const [crops, setCrops] = useState([]);
+    const [filteredCrops, setFilteredCrops] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchCrops = async () => {
             try {
-                const response = await getCrops();  // ✅ Corrected function call
+                const response = await getCrops();
                 if (!response || !response.data) {
                     throw new Error("Invalid API response");
                 }
                 setCrops(response.data);
+                setFilteredCrops(response.data);
                 setError(null);
             } catch (err) {
                 console.error("Error fetching crops:", err);
@@ -30,41 +33,22 @@ const CropList = () => {
         fetchCrops();
     }, []);
 
-    // Function to generate a CSV report
+    useEffect(() => {
+        setFilteredCrops(
+            crops.filter(crop => 
+                crop.name.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+        );
+    }, [searchQuery, crops]);
+
     const handleGenerateCSV = () => {
-        const header = [
-            'Name', 'Type', 'Season', 'Yield per Acre', 'Weather Dependency', 
-            'Pest Control', 'Fertilizer Schedule', 'Fertilizer Type', 
-            'Watering Schedule', 'Soil Type', 'Planting Date', 'Expected Harvest Date'
-        ];
-
-        // Mapping the crops data to rows
-        const rows = crops.map((crop) => [
-            crop.name, 
-            crop.type, 
-            crop.season, 
-            crop.yieldPerAcre, 
-            crop.weatherDependency || 'N/A',
-            crop.pestControl || 'N/A', 
-            crop.fertilizerSchedule || 'N/A', 
-            crop.fertilizerType || 'N/A', 
-            crop.wateringSchedule || 'N/A', 
-            crop.soilType || 'N/A', 
-            crop.plantingDate ? new Date(crop.plantingDate).toLocaleDateString() : 'N/A', 
-            crop.expectedHarvestDate ? new Date(crop.expectedHarvestDate).toLocaleDateString() : 'N/A'
-        ]);
-
-        // Converting to CSV format
-        const csvContent = [
-            header.join(','), // Adding header row
-            ...rows.map(row => row.join(','))  // Adding data rows
-        ].join('\n');
-
-        // Creating a Blob and downloading the file
+        const header = ['Name', 'Type', 'Season', 'Yield per Acre', 'Weather Dependency', 'Pest Control', 'Fertilizer Schedule', 'Fertilizer Type', 'Watering Schedule', 'Soil Type', 'Planting Date', 'Expected Harvest Date'];
+        const rows = crops.map(crop => [crop.name, crop.type, crop.season, crop.yieldPerAcre, crop.weatherDependency || 'N/A', crop.pestControl || 'N/A', crop.fertilizerSchedule || 'N/A', crop.fertilizerType || 'N/A', crop.wateringSchedule || 'N/A', crop.soilType || 'N/A', crop.plantingDate ? new Date(crop.plantingDate).toLocaleDateString() : 'N/A', crop.expectedHarvestDate ? new Date(crop.expectedHarvestDate).toLocaleDateString() : 'N/A']);
+        const csvContent = [header.join(','), ...rows.map(row => row.join(','))].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'Crop_Report.csv';  // Filename for the CSV
+        link.download = 'Crop_Report.csv';
         link.click();
     };
 
@@ -86,64 +70,84 @@ const CropList = () => {
     }
 
     return (
-        <>
-            <Header />
-            <Container maxWidth="md" sx={{ marginTop: 4 }}>
-                <Typography variant="h4" gutterBottom>
-                    My Crops
+        <Container maxWidth="md" sx={{ marginTop: 4, textAlign: 'center', position: 'relative' }}>
+            {/* Generate Report Button in Upper Right Corner */}
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} style={{ position: 'absolute', top: 0, right: 0, margin: '10px' }}>
+                <Button variant="contained" color="success" onClick={handleGenerateCSV}>
+                    Generate Report
+                </Button>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
+                <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold', color: '#2e7d32', fontFamily: 'cursive' }}>
+                    🌿 Farm Tracker 🌾
                 </Typography>
-                
-                <Paper elevation={3} sx={{ padding: 3, marginTop: 2 }}>
-                    <Grid container spacing={3}>
-                        {crops.length > 0 ? (
-                            crops.map((crop) => (
-                                <Grid item xs={12} sm={6} md={4} key={crop._id}>
+
+                {/* Search Bar */}
+                <TextField 
+                    label="Search Crops" 
+                    variant="outlined" 
+                    fullWidth 
+                    sx={{ marginBottom: 3, borderRadius: '20px', overflow: 'hidden', border: '1px solid #ccc' }}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+
+                {/* "Add New Crop" Button Before Crop List */}
+                <Grid container justifyContent="center" sx={{ marginBottom: 3 }}>
+                    <Grid item xs={12} sm={6} md={4}>
+                        <motion.div whileHover={{ scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}>
+                            <Paper 
+                                elevation={3} 
+                                sx={{
+                                    padding: 3, 
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    cursor: 'pointer', 
+                                    minHeight: 100,
+                                    backgroundColor: '#e8f5e9'
+                                }}
+                                onClick={() => navigate('/add-crop')}
+                            >
+                                <AddIcon sx={{ fontSize: 40, color: '#388e3c' }} />
+                                <Typography variant="subtitle1" sx={{ color: '#388e3c' }}>
+                                    Add New Crop
+                                </Typography>
+                            </Paper>
+                        </motion.div>
+                    </Grid>
+                </Grid>
+
+                {/* Crops List */}
+                <Grid container spacing={3} justifyContent="center">
+                    {filteredCrops.length > 0 ? (
+                        filteredCrops.map((crop) => (
+                            <Grid item xs={12} sm={6} md={4} key={crop._id}>
+                                <motion.div whileHover={{ scale: 1.05 }} transition={{ type: 'spring', stiffness: 300 }}>
                                     <Paper elevation={3} sx={{ padding: 2, textAlign: 'center' }}>
                                         <Typography variant="h6">{crop.name}</Typography>
-                                        
-                                        <Button
-                                            variant="contained"
-                                            color="success"  // Green button
-                                            sx={{ marginTop: 2 }}
+                                        <Button 
+                                            variant="contained" 
+                                            color="success" 
+                                            sx={{ marginTop: 1 }}
                                             onClick={() => navigate(`/crop/${crop._id}`)}
                                         >
                                             View Details
                                         </Button>
                                     </Paper>
-                                </Grid>
-                            ))
-                        ) : (
-                            <Grid item xs={12}>
-                                <Typography variant="body1">No crops found.</Typography>
+                                </motion.div>
                             </Grid>
-                        )}
-                    </Grid>
-                </Paper>
-
-                {/* Add Crop & Generate CSV Buttons */}
-                <Grid container spacing={2} justifyContent="center" sx={{ marginTop: 4 }}>
-                    <Grid item>
-                        <Button
-                            variant="contained"
-                            color="success"  // Green button
-                            onClick={() => navigate('/add-crop')}
-                        >
-                            Add New Crop
-                        </Button>
-                    </Grid>
-                    <Grid item>
-                        <Button
-                            variant="contained"
-                            color="success"  // Green button
-                            onClick={handleGenerateCSV}
-                        >
-                            Generate Report
-                        </Button>
-                    </Grid>
+                        ))
+                    ) : (
+                        <Grid item xs={12}>
+                            <Typography variant="body1">No crops found.</Typography>
+                        </Grid>
+                    )}
                 </Grid>
-            </Container>
-            <Footer />
-        </>
+            </motion.div>
+        </Container>
     );
 };
 
