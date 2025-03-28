@@ -25,6 +25,7 @@ const AddCrop = () => {
         expectedHarvestDate: '',
         plantingDate: ''
     });
+    const [errorMessages, setErrorMessages] = useState({});
     const [successMessage, setSuccessMessage] = useState(false);
     const navigate = useNavigate();
 
@@ -32,13 +33,49 @@ const AddCrop = () => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
+    const validateForm = () => {
+        const errors = {};
+        const plantingDate = new Date(form.plantingDate);
+        const expectedHarvestDate = new Date(form.expectedHarvestDate);
+
+        if (!form.name) errors.name = 'Crop Name is required';
+        if (!form.type) errors.type = 'Crop Type is required';
+        if (!form.season) errors.season = 'Season is required';
+        if (!form.soilType) errors.soilType = 'Soil Type is required';
+        if (!form.fertilizerSchedule) errors.fertilizerSchedule = 'Fertilizer Schedule is required';
+        if (!form.fertilizerType) errors.fertilizerType = 'Fertilizer Type is required';
+        if (!form.wateringSchedule) errors.wateringSchedule = 'Watering Schedule is required';
+        if (!form.pestControl) errors.pestControl = 'Pest Control information is required';
+        if (!form.weatherDependency) errors.weatherDependency = 'Weather Dependency is required';
+        if (!form.plantingDate) errors.plantingDate = 'Planting Date is required';
+        if (!form.expectedHarvestDate) errors.expectedHarvestDate = 'Expected Harvest Date is required';
+
+        if (expectedHarvestDate <= plantingDate) {
+            errors.expectedHarvestDate = 'Expected Harvest Date must be after the Planting Date';
+        }
+
+        // Only validate Yield Per Acre if it is empty
+        if (form.yieldPerAcre && isNaN(form.yieldPerAcre)) {
+            errors.yieldPerAcre = 'Yield per Acre must be a valid number';
+        }
+
+        return errors;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const errors = validateForm();
+
+        if (Object.keys(errors).length > 0) {
+            setErrorMessages(errors);
+            return;
+        }
+
         try {
             await addCrop(form);
             setSuccessMessage(true);
             setTimeout(() => {
-                navigate('/crop-details', { state: { crop: form } });
+                navigate('/', { state: { crop: form } });
             }, 3000);
         } catch (error) {
             console.error('Error adding crop:', error.response ? error.response.data : error.message);
@@ -47,13 +84,13 @@ const AddCrop = () => {
 
     return (
         <Container maxWidth="md" sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Paper elevation={6} sx={{ padding: 4, width: '100%', background: 'linear-gradient(135deg, #4caf50, #fff)', borderRadius: 2 }}>
+            <Paper elevation={6} sx={{ padding: 4, width: '100%', background: 'linear-gradient( #fff)', borderRadius: 2 }}>
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <Typography variant="h4" align="center" gutterBottom sx={{ color: '#fff', fontWeight: 'bold' }}>
+                    <Typography variant="h4" align="center" gutterBottom sx={{ color: '#4caf50', fontWeight: 'bold' }}>
                         <CropIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
                         Add Crop
                     </Typography>
@@ -68,17 +105,8 @@ const AddCrop = () => {
                                 value={form.name}
                                 onChange={handleChange}
                                 required
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <CropIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
-                                sx={{ input: { color: '#fff' } }}
+                                error={!!errorMessages.name}
+                                helperText={errorMessages.name}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -90,17 +118,8 @@ const AddCrop = () => {
                                 value={form.type}
                                 onChange={handleChange}
                                 required
-                                sx={{ minWidth: 200, input: { color: '#fff' } }}
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <CropIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
+                                error={!!errorMessages.type}
+                                helperText={errorMessages.type}
                             >
                                 {cropTypes.map((option) => (
                                     <MenuItem key={option} value={option}>
@@ -116,17 +135,8 @@ const AddCrop = () => {
                                 label="Season"
                                 value={form.season}
                                 onChange={handleChange}
-                                required
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <WateringIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
+                                error={!!errorMessages.season}
+                                helperText={errorMessages.season}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -136,17 +146,8 @@ const AddCrop = () => {
                                 label="Yield Per Acre"
                                 value={form.yieldPerAcre}
                                 onChange={handleChange}
-                                required
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <FertilizerIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
+                                error={!!errorMessages.yieldPerAcre}
+                                helperText={errorMessages.yieldPerAcre}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -156,17 +157,8 @@ const AddCrop = () => {
                                 label="Soil Type"
                                 value={form.soilType}
                                 onChange={handleChange}
-                                required
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <WateringIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
+                                error={!!errorMessages.soilType}
+                                helperText={errorMessages.soilType}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -176,16 +168,8 @@ const AddCrop = () => {
                                 label="Fertilizer Schedule"
                                 value={form.fertilizerSchedule}
                                 onChange={handleChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <FertilizerIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
+                                error={!!errorMessages.fertilizerSchedule}
+                                helperText={errorMessages.fertilizerSchedule}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -195,16 +179,8 @@ const AddCrop = () => {
                                 label="Fertilizer Type"
                                 value={form.fertilizerType}
                                 onChange={handleChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <FertilizerIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
+                                error={!!errorMessages.fertilizerType}
+                                helperText={errorMessages.fertilizerType}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -214,16 +190,8 @@ const AddCrop = () => {
                                 label="Watering Schedule"
                                 value={form.wateringSchedule}
                                 onChange={handleChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <WateringIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
+                                error={!!errorMessages.wateringSchedule}
+                                helperText={errorMessages.wateringSchedule}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -233,16 +201,8 @@ const AddCrop = () => {
                                 label="Pest Control"
                                 value={form.pestControl}
                                 onChange={handleChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <PestControlIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
+                                error={!!errorMessages.pestControl}
+                                helperText={errorMessages.pestControl}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -252,16 +212,8 @@ const AddCrop = () => {
                                 label="Weather Dependency"
                                 value={form.weatherDependency}
                                 onChange={handleChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'spring', stiffness: 300 }}
-                                        >
-                                            <WateringIcon sx={{ marginRight: 1, backgroundColor: '#4caf50', color: '#fff', padding: 0.5, borderRadius: '50%' }} />
-                                        </motion.div>
-                                    )
-                                }}
+                                error={!!errorMessages.weatherDependency}
+                                helperText={errorMessages.weatherDependency}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -273,6 +225,8 @@ const AddCrop = () => {
                                 value={form.plantingDate}
                                 onChange={handleChange}
                                 InputLabelProps={{ shrink: true }}
+                                error={!!errorMessages.plantingDate}
+                                helperText={errorMessages.plantingDate}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -284,6 +238,8 @@ const AddCrop = () => {
                                 value={form.expectedHarvestDate}
                                 onChange={handleChange}
                                 InputLabelProps={{ shrink: true }}
+                                error={!!errorMessages.expectedHarvestDate}
+                                helperText={errorMessages.expectedHarvestDate}
                             />
                         </Grid>
                     </Grid>
@@ -300,6 +256,8 @@ const AddCrop = () => {
                     </motion.div>
                 </form>
             </Paper>
+
+            {/* Success Snackbar */}
             <Snackbar open={successMessage} autoHideDuration={3000} onClose={() => setSuccessMessage(false)}>
                 <Alert severity="success">Crop added successfully!</Alert>
             </Snackbar>
