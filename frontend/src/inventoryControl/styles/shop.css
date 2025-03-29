@@ -1,0 +1,44 @@
+/* Hide edit, delete, and remove buttons inside the Shop page */
+.shop-page .edit-btn,
+.shop-page .delete-btn,
+.shop-page .remove-btn {
+  display: none !important;
+}
+
+/* If the buttons are inside a specific div or class within the Shop page */
+.shop-page .item-container .edit-btn,
+.shop-page .shop-page .item-container .remove-btn {
+  display: none !important;
+}
+
+/* Ensure all buttons with text "Remove" are hidden inside Shop page */
+.shop-page button {
+  display: none !important;
+}
+
+
+
+/* Make all buttons white with black text */
+.shop-page button {
+  background-color: white;
+  color: black;
+  border: 1px solid black;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.shop-page button:hover {
+  background-color: #f0f0f0; 
+  color: black;
+}
+
+/* Make links white in Shop page */
+.shop-page a {
+  color: white;
+}
+
+.shop-page a:hover {
+  text-decoration: underline;
+}
+
+
